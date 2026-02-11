@@ -5,7 +5,7 @@ import triton
 from pathlib import Path
 from triton import knobs
 from triton.backends.compiler import GPUTarget
-from triton.backends.driver import GPUDriver, decompose_descriptor, expand_signature, wrap_descriptors
+from triton.backends.driver import GPUDriver, decompose_descriptor, expand_signature, wrap_handle_tensordesc_impl
 from triton.runtime import _allocation
 from triton.runtime.build import compile_module_from_src
 
@@ -257,7 +257,7 @@ def annotate_arguments(signature):
     return annotated_arguments
 
 
-def make_tensordesc_arg(arg, kernel_metadata, tensordesc_metadata):
+def make_tensordesc_arg(arg, tensordesc_metadata, base_args):
     """
     Translate a tensor descriptor argument into the appropriate list of kernel
     arguments. If `tensordesc_metadata` is provided, we will create a
@@ -269,6 +269,7 @@ def make_tensordesc_arg(arg, kernel_metadata, tensordesc_metadata):
     if tensordesc_metadata is None:
         return decompose_descriptor(arg)
 
+    kernel_metadata = base_args[7]
     shape = arg.shape
     strides = arg.strides
     base = arg.base.data_ptr()
@@ -307,10 +308,7 @@ def wrap_handle_tensordesc(launcher, signature, tensordesc_meta):
         launcher (callable): The wrapped kernel launcher function.
     """
 
-    def make_descriptor(arg, meta, base_args):
-        return make_tensordesc_arg(arg, base_args[7], meta)
-
-    return wrap_descriptors(launcher, signature, tensordesc_meta, make_descriptor)
+    return wrap_handle_tensordesc_impl(launcher, signature, tensordesc_meta, make_tensordesc_arg)
 
 
 class HIPLauncher(object):

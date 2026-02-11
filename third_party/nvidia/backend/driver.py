@@ -7,7 +7,7 @@ from triton import knobs
 from triton.runtime.build import compile_module_from_src
 from triton.runtime import _allocation
 from triton.backends.compiler import GPUTarget
-from triton.backends.driver import GPUDriver, decompose_descriptor, expand_signature, wrap_descriptors
+from triton.backends.driver import GPUDriver, decompose_descriptor, expand_signature, wrap_handle_tensordesc_impl
 
 dirname = os.path.dirname(os.path.realpath(__file__))
 include_dirs = [os.path.join(dirname, "include")]
@@ -165,7 +165,7 @@ TMA_DTYPE_DEVICE_TO_HOST[10] = 9
 TMA_TF32 = 11
 
 
-def make_tensordesc_arg(arg, metadata):
+def make_tensordesc_arg(arg, metadata, _):
     if metadata is None:
         return decompose_descriptor(arg)
 
@@ -224,11 +224,7 @@ def make_tensordesc_arg(arg, metadata):
 
 
 def wrap_handle_tensordesc(launcher, signature, tensordesc_meta):
-
-    def make_descriptor(arg, meta, _base_args):
-        return make_tensordesc_arg(arg, meta)
-
-    return wrap_descriptors(launcher, signature, tensordesc_meta, make_descriptor)
+    return wrap_handle_tensordesc_impl(launcher, signature, tensordesc_meta, make_tensordesc_arg)
 
 
 class CudaLauncher(object):
