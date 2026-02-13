@@ -26,6 +26,19 @@ module attributes {"ttg.num-ctas" = 2 : i32, "ttg.num-warps" = 4 : i32} {
 
 // -----
 
+module attributes {"ttg.num-ctas" = 2 : i32, "ttg.num-warps" = 4 : i32, "ttg.total-num-warps" = 4 : i32} {
+  // CHECK-LABEL: @cluster_barrier_not_warp_specialized
+  llvm.func @cluster_barrier_not_warp_specialized() {
+    // CHECK-NOT: ttg.warp_specialize
+    // CHECK: nvvm.cluster.arrive
+    // CHECK-NEXT: nvvm.cluster.wait
+    nvg.cluster_barrier {relaxed = false}
+    llvm.return
+  }
+}
+
+// -----
+
 module attributes {"ttg.num-ctas" = 2 : i32, "ttg.num-warps" = 4 : i32, "ttg.total-num-warps" = 8 : i32} {
   // CHECK-LABEL: @cluster_barrier_warp_specialized
   llvm.func @cluster_barrier_warp_specialized() {

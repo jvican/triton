@@ -116,9 +116,9 @@ def NVGPU_ClusterBarrierOp : NVGPU_Op<"cluster_barrier", []> {
   let description = [{
     Lowers to a cluster arrive/wait pair.
 
-    In warp-specialized kernels, lowering wraps the barrier in a
+    In warp-specialized kernels, lowering wraps the barrier in a synthetic
     `ttg.warp_specialize` region so worker warps also execute the barrier.
-    In this case, this op can only be placed in the root partition.
+    This op cannot be placed inside an existing `ttg.warp_specialize`.
   }];
   let assemblyFormat = "attr-dict";
   let hasVerifier = 1;

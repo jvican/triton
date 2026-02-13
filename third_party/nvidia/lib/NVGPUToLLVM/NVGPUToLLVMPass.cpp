@@ -279,7 +279,7 @@ public:
       NVVM::ClusterWaitOp::create(b, loc, unitAttr);
     };
 
-    if (workerNumWarps <= 0) {
+    if (workerNumWarps == 0) {
       createClusterBarrier(rewriter);
       rewriter.eraseOp(op);
       return success();

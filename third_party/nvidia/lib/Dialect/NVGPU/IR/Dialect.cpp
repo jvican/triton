@@ -24,6 +24,7 @@
 #include "triton/Dialect/TritonGPU/IR/Dialect.h"
 #include "mlir/IR/DialectImplementation.h"
 #include "mlir/IR/OpImplementation.h"
+#include "triton/Dialect/Triton/IR/Interfaces.h"
 
 // clang-format off
 #include "Dialect/NVGPU/IR/Dialect.h"
@@ -43,6 +44,7 @@ void mlir::triton::nvgpu::NVGPUDialect::initialize() {
 #define GET_OP_LIST
 #include "Dialect/NVGPU/IR/Ops.cpp.inc"
       >();
+  addInterfaces<triton::TritonInlinerInterface>();
 }
 
 #define GET_OP_CLASSES
@@ -53,8 +55,7 @@ LogicalResult ClusterBarrierOp::verify() {
   int numCTAs = triton::gpu::lookupNumCTAs(getOperation());
   if (numCTAs <= 1)
     return emitOpError("requires ttg.num-ctas > 1");
-  if ((*this)->getParentOfType<mlir::triton::gpu::WarpSpecializePartitionsOp>())
-    return emitOpError(
-        "cannot be used inside `ttg.warp_specialize.partitions`");
+  if ((*this)->getParentOfType<mlir::triton::gpu::WarpSpecializeOp>())
+    return emitOpError("cannot be used inside `ttg.warp_specialize`");
   return success();
 }
